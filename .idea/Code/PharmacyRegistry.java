@@ -60,9 +60,11 @@ public class PharmacyRegistry {
             setMed(medName, formattedDate, quant);
 
         }
-
-        removeExpired(currentDate);
         
+        if (currentDate != null){
+            removeExpired(currentDate);
+        }
+
         String message = "APPROV OK\n";
         write(message, outputFile);
     }
