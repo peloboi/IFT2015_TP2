@@ -3,15 +3,9 @@
 // PELOQUIN, Vincent - 20105029
 
 import java.io.*;
-import java.text.DecimalFormat;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.ArrayList;
-import java.time.LocalDate;
-import java.util.TreeMap;
+
 
 public class Tp2 {
     public static void main(String[] args) {

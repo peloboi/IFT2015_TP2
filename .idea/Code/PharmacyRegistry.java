@@ -60,6 +60,8 @@ public class PharmacyRegistry {
             setMed(medName, formattedDate, quant);
 
         }
+
+        removeExpired(currentDate);
         
         String message = "APPROV OK\n";
         write(message, outputFile);
@@ -86,6 +88,8 @@ public class PharmacyRegistry {
         LocalDate formattedDate = LocalDate.of(year, month, day);
         currentDate = formattedDate;
 
+        removeExpired(currentDate);
+
         String message;
         if (orderRegistry.isEmpty()){
             message = unformattedDate + " OK\n\n";
@@ -109,6 +113,24 @@ public class PharmacyRegistry {
                 String med = toRemove.getFirst();
                 orderRegistry.remove(med);
                 toRemove.removeFirst();
+            }
+        }
+    }
+
+    public void removeExpired(LocalDate currentDate){
+        LinkedList<LocalDate> instanceToRemove = new LinkedList<>();
+
+        for (TreeMap<LocalDate, Integer> stock : medsRegistry.values()){
+
+            for (LocalDate date : stock.keySet()){
+                if (date.isBefore(currentDate) || date.equals(currentDate)){
+                    instanceToRemove.add(date);
+                }
+            }
+
+            while (!instanceToRemove.isEmpty()){
+                stock.remove(instanceToRemove.getFirst());
+                instanceToRemove.removeFirst();
             }
         }
     }
@@ -140,9 +162,10 @@ public class PharmacyRegistry {
             int totalQuant = quant*freq;
 
             boolean prescribed = false;
+            LocalDate minExpiryDate = currentDate.plusDays(totalQuant);
 
             if (medsRegistry.containsKey(med)){
-                int totalStock = getTotalStock(med);
+                int totalStock = getTotalStock(med, minExpiryDate, totalQuant);
                 if (totalStock >= totalQuant){
                     prescribeMed(med, totalQuant);
                     prescribed = true;
@@ -182,40 +205,38 @@ public class PharmacyRegistry {
 
     public void prescribeMed(String med, int quant){
         TreeMap<LocalDate, Integer> medStock = medsRegistry.get(med);
-        
-        System.out.println(med);
-        System.out.println(quant);
-        
-        LinkedList<LocalDate> toRemove = new LinkedList<>(); 
-        for (Map.Entry<LocalDate, Integer> instance : medStock.entrySet()){
-            int instanceQuant = instance.getValue();
-            if (instanceQuant < quant){
-                quant -= instanceQuant;
-                toRemove.add(instance.getKey());
+         
+        for (LocalDate date : medStock.keySet()){
+            int instanceQuant = medStock.get(date);
+            if (instanceQuant == quant){
+                medStock.remove(date);
+                break;
             }
-            else {
+            if (instanceQuant > quant){
                 instanceQuant -= quant;
-                medStock.put(instance.getKey(), instanceQuant);
+                medStock.put(date, instanceQuant);
                 break;
             }
 
-        }
-
-        while (!toRemove.isEmpty()){
-            LocalDate current = toRemove.getFirst();
-            medStock.remove(current);
-            toRemove.removeFirst();
         }
 
         medsRegistry.put(med, medStock);
 
     }
     
-    public int getTotalStock(String med){
+    public int getTotalStock(String med, LocalDate minExpiryDate, int totalQuant){
         int totalStock = 0;
+        LocalDate totalStockDate = LocalDate.of(2023,12,31);
         TreeMap<LocalDate, Integer> medStock = medsRegistry.get(med);
-        for (Integer quant : medStock.values()){
-            totalStock += quant;
+        for (LocalDate date : medStock.keySet()){
+            boolean isAfterOrEqual = date.isAfter(minExpiryDate) || date.equals(minExpiryDate);
+            if (isAfterOrEqual) {
+                int instanceStock = medStock.get(date);
+                if (instanceStock >= totalQuant && date.isBefore(totalStockDate)){
+                    totalStock = instanceStock;
+                    totalStockDate = date;
+                }
+            }
         }
         return totalStock;
     }
