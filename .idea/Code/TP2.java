@@ -9,36 +9,56 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.time.LocalDate;
+import java.util.TreeMap;
 
-public class TP2 {
-    public static void main(String[] args){
-
-        // initial time for empirical analysis.
-        long initialTime = System.currentTimeMillis();
+public class Tp2 {
+    public static void main(String[] args) {
 
         // setup of the main variables
         File readFile = new File(args[0]);
         File writeFile = new File(args[1]);
+        PharmacyRegistry pharmRegistry = new PharmacyRegistry();
 
         try {
             Scanner read = new Scanner(readFile);
-            String rawInput = "";
+            StringBuilder rawInput = new StringBuilder();
 
-            while (read.hasNextLine()){
-                rawInput += read.nextLine();
+            while (read.hasNextLine()) {
+                rawInput.append(read.nextLine()).append("\n");
             }
 
-            String[] commands = rawInput.split(";", 0);
+            String[] commands = rawInput.toString().split(";", 0);
+            ArrayList<String> trimmedCommands = new ArrayList<>();
 
-            for (int i=0; i < commands.length ; i++){
-                System.out.println(commands[i]);
+            for (String command : commands) {
+                String trimmedCommand = command.trim();
+                if (!trimmedCommand.isEmpty()) {
+                    trimmedCommands.add(trimmedCommand);
+                }
+            }
+
+            // Execute the trimmed commands.
+            for (String trimmedCommand : trimmedCommands) {
+                if (trimmedCommand.startsWith("DATE")){
+                    pharmRegistry.date(trimmedCommand, writeFile);
+                }
+                if (trimmedCommand.startsWith("PRESCRIPTION")){
+                    pharmRegistry.prescription(trimmedCommand, writeFile);
+                }
+                if (trimmedCommand.startsWith("APPROV")){
+                    pharmRegistry.approv(trimmedCommand, writeFile);
+                }
+                if (trimmedCommand.startsWith("STOCK")){
+                    pharmRegistry.stock(writeFile);
+                }
+
             }
 
 
-        }
-        catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             System.out.println("The file " + args[0] + " doesn't exist");
         }
-
     }
 }
