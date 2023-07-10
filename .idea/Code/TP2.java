@@ -15,7 +15,7 @@ public class Tp2 {
         File writeFile = new File(args[1]);
         PharmacyRegistry pharmRegistry = new PharmacyRegistry();
 
-        try {
+        try { // reads the input file and trims the commands for optimal treatment.
             Scanner read = new Scanner(readFile);
             StringBuilder rawInput = new StringBuilder();
 
@@ -33,7 +33,7 @@ public class Tp2 {
                 }
             }
 
-            // Execute the trimmed commands.
+            // Send the trimmed commands to PharmRegistry for execution.
             for (String trimmedCommand : trimmedCommands) {
                 if (trimmedCommand.startsWith("DATE")){
                     pharmRegistry.date(trimmedCommand, writeFile);
